@@ -14,8 +14,8 @@ public class Sistemacopy {
     private static Scanner scanner = new Scanner(System.in);
     static List<Produto> produtos = new ArrayList<>();
     static List<Vendas> lista_venda = new ArrayList<>();
-    static String buscar;    
-    static String produtoVendas;
+    static String buscar;
+    
         
     public static void main(String[] args) throws Exception {
 
@@ -46,10 +46,10 @@ public class Sistemacopy {
                listarProduto();
                 break;
             }
-            // case 4:{
-            //     vendasPeriodo();
-            //     break;
-            // }
+            case 4:{
+                vendasPeriodo();
+                break;
+            }
             case 5:{
                 realizarVendas();
                 break;
@@ -107,7 +107,7 @@ public class Sistemacopy {
             DoubleSummaryStatistics resumo = produtos.stream()
             .collect(Collectors.summarizingDouble(Produto::get_valorProduto));
             System.out.println("-------------------------------------------------------------------------------------");
-            System.out.println("# RESUMO:");
+            System.out.println("-------------------------------------RESUMO------------------------------------------");
             System.out.printf("Menor valor: %s - Maior Valor: %S\n ", resumo.getMin(), resumo.getMax());
             System.out.printf("Valor Médio: %.0f", resumo.getAverage());
             System.out.println("\n");
@@ -125,7 +125,8 @@ public class Sistemacopy {
             int quantidadeVendida = scanner.nextInt();
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yy");
             LocalDate dataVenda = LocalDate.parse(datavenda, dtf);
-            Vendas vendas = new Vendas(dataVenda, produtoVendido, quantidadeVendida);
+            Double valorVenda = Produto.get_valorProduto()*quantidadeVendida;
+            Vendas vendas = new Vendas(dataVenda, produtoVendido, quantidadeVendida,valorVenda);
             lista_venda.add(vendas);
             System.out.println("Venda realizada com sucesso! "); 
             scanner.nextLine();   
@@ -136,8 +137,37 @@ public class Sistemacopy {
         return null;
     }
 
+    private static Vendas vendasPeriodo(){
+        System.out.println("Relatório de Vendas");
+        System.out.println("Digite a data inícial:");
+        String dataInicio = scanner.nextLine();
+        System.out.println("Digite a data final:");
+        String dataFim = scanner.nextLine();
 
+        // definindo a formatação da data
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yy");
+        LocalDate dataInicioLocalDate = LocalDate.parse(dataInicio, dtf);
+        LocalDate dataFimLocalDate = LocalDate.parse(dataFim, dtf);
+        
+        //Filtrando a lista de vendas pelo período
+        DoubleSummaryStatistics resumovenda = lista_venda.stream()
+        .filter( venda-> 
+        venda.get_dataVenda().compareTo(dataInicioLocalDate) > -1 
+            && venda.get_dataVenda().compareTo(dataFimLocalDate) < 1 )
+        .collect(Collectors.summarizingDouble(Vendas::get_valorVendas));
+        System.out.println("--------------------------------VENDAS POR PERÍODO------------------------------------");
+        System.out.printf("%7s %20s %20s %20s\n", "DATA VENDA", "PRODUTO", "QUANTIDADE","VALOR");
+        System.out.println("--------------------------------------------------------------------------------------");
+        for (Vendas venda : lista_venda) {
+            System.out.printf( "%7s %20s %20s %20s\n",venda.get_dataVenda(), venda.get_produtoVendido(), venda.get_quantidadeVendida(), venda.get_valorVendas());
+            }
+        System.out.println("-----------------------------------RESUMO-----------------------------------------");
+        System.out.printf( "Menor valor %s - Média de valor %s - Maior valor %s\n",resumovenda.getMin(), resumovenda.getAverage(),resumovenda.getMax());
+        return null;
+        
+    }
     private static void visualizarMenu(){
+
         System.out.println("1. Incluir Produto");
         System.out.println("2. Consultar Produto");
         System.out.println("3. Listagem de Produtos");
